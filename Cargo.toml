@@ -10,3 +10,4 @@ categories = ["command-line-utilities"]
 authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
 
 [dependencies]
+alpm = "4.0.2"

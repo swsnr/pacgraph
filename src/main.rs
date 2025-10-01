@@ -31,6 +31,13 @@
 )]
 #![forbid(unsafe_code)]
 
+use alpm::Alpm;
+
 fn main() {
-    println!("Hello, world!");
+    let alpm = Alpm::new("/", "/var/lib/pacman/").unwrap();
+    let mut packages = alpm.localdb().pkgs().into_iter().collect::<Vec<_>>();
+    packages.sort_by_key(|p| p.name());
+    for pkg in packages {
+        println!("{} {}", pkg.name(), pkg.version());
+    }
 }
