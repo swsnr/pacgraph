@@ -1,0 +1,12 @@
+[package]
+name = "pacgraph"
+version = "0.1.0"
+description = "Work with pacman package graphs"
+homepage = "https://codeberg.org/swsnr/pacgraph"
+license = "EUPL-1.2 OR GPL-3.0"
+edition = "2024"
+keywords = ["pacman", "graph", "alpm"]
+categories = ["command-line-utilities"]
+authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
+
+[dependencies]
