@@ -31,10 +31,21 @@
 )]
 #![forbid(unsafe_code)]
 
-use alpm::Alpm;
+use alpm::{Alpm, LogLevel};
+use tracing::{Level, info};
 
 fn main() {
+    tracing_subscriber::fmt::init();
+    info!("Hello");
+
     let alpm = Alpm::new("/", "/var/lib/pacman/").unwrap();
+    alpm.set_log_cb((), |level, msg, ()| match level {
+        LogLevel::DEBUG => tracing::event!(target: "alpm", Level::DEBUG, "{}", msg),
+        LogLevel::WARNING => tracing::event!(target: "alpm", Level::WARN, "{}", msg),
+        LogLevel::ERROR => tracing::event!(target: "alpm", Level::ERROR, "{}", msg),
+        _ => tracing::event!(target: "alpm", Level::TRACE, "{}", msg),
+    });
+
     let mut packages = alpm.localdb().pkgs().into_iter().collect::<Vec<_>>();
     packages.sort_by_key(|p| p.name());
     for pkg in packages {
