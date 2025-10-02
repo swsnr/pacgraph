@@ -11,5 +11,6 @@ authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
 
 [dependencies]
 alpm = "4.0.2"
+petgraph = "0.8.3"
 tracing = "0.1"
 tracing-subscriber = "0.3"
