@@ -3,6 +3,7 @@ default:
 
 # Run all lints and tests.
 test-all:
+    cargo +stable deny --locked check
     cargo +stable fmt -- --check
     cargo +stable doc
     cargo +stable build --locked
