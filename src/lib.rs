@@ -4,7 +4,9 @@
 //
 // See https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 
-#![deny(warnings, clippy::all, clippy::pedantic,
+//! Graph analysis tools for ALPM packages.
+
+#![deny(warnings, missing_docs, missing_debug_implementations, clippy::all, clippy::pedantic,
     // Do cfg(test) right
     clippy::cfg_not_test,
     clippy::tests_outside_test_module,
@@ -31,19 +33,6 @@
 )]
 #![forbid(unsafe_code)]
 
-use alpm::Alpm;
-
-fn main() {
-    tracing_subscriber::fmt::init();
-    let alpm = Alpm::new("/", "/var/lib/pacman/").unwrap();
-    alpm.set_log_cb((), pacgraph::alpm::tracing_log_cb);
-
-    let localdb = alpm.localdb();
-    let pkg_graph = pacgraph::graph::build_graph_for_localdb(localdb);
-    let mut orphans = pacgraph::dependencies::orphans(&pkg_graph).collect::<Vec<_>>();
-    // Sort alphabetically
-    orphans.sort_by_key(|pkg| pkg.name());
-    for pkg in orphans {
-        println!("{}", pkg.name());
-    }
-}
+pub mod alpm;
+pub mod dependencies;
+pub mod graph;
