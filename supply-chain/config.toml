@@ -26,10 +26,6 @@ criteria = "safe-to-run"
 version = "0.5.7"
 criteria = "safe-to-run"
 
-[[exemptions.nu-ansi-term]]
-version = "0.50.1"
-criteria = "safe-to-run"
-
 [[exemptions.petgraph]]
 version = "0.8.3"
 criteria = "safe-to-run"
