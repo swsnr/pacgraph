@@ -33,17 +33,40 @@
 
 use alpm::Alpm;
 
-fn main() {
-    tracing_subscriber::fmt::init();
-    let alpm = Alpm::new("/", "/var/lib/pacman/").unwrap();
-    alpm.set_log_cb((), pacgraph::alpm::tracing_log_cb);
+use crate::print::print_package_one_line;
 
+mod args;
+mod print;
+
+fn list_orphans(options: &args::Orphans, alpm: &Alpm) -> std::io::Result<()> {
     let localdb = alpm.localdb();
     let pkg_graph = pacgraph::graph::build_graph_for_localdb(localdb);
     let mut orphans = pacgraph::dependencies::orphans(&pkg_graph).collect::<Vec<_>>();
     // Sort alphabetically
     orphans.sort_by_key(|pkg| pkg.name());
+
+    let how = if options.quiet {
+        print::PrintOneLine::NameOnly
+    } else {
+        print::PrintOneLine::WithVersion
+    };
     for pkg in orphans {
-        println!("{}", pkg.name());
+        print_package_one_line(&mut std::io::stdout(), pkg, how)?;
     }
+    Ok(())
+}
+
+fn main() -> std::io::Result<()> {
+    tracing_subscriber::fmt::init();
+
+    let args = argh::from_env::<args::Args>();
+
+    let alpm = Alpm::new("/", "/var/lib/pacman/").unwrap();
+    alpm.set_log_cb((), pacgraph::alpm::tracing_log_cb);
+
+    match args.command {
+        args::Command::Orphans(orphans) => list_orphans(&orphans, &alpm)?,
+    }
+
+    Ok(())
 }

@@ -94,6 +94,42 @@ criteria = "safe-to-deploy"
 version = "0.1.0"
 notes = "No unsafe usage or ambient capabilities, sane build script"
 
+[[audits.google.audits.argh]]
+who = "ChromeOS"
+criteria = "safe-to-run"
+version = "0.1.10"
+aggregated-from = "https://chromium.googlesource.com/chromiumos/third_party/rust_crates/+/refs/heads/main/cargo-vet/audits.toml?format=TEXT"
+
+[[audits.google.audits.argh]]
+who = "George Burgess IV <gbiv@google.com>"
+criteria = "safe-to-run"
+delta = "0.1.10 -> 0.1.12"
+aggregated-from = "https://chromium.googlesource.com/chromiumos/third_party/rust_crates/+/refs/heads/main/cargo-vet/audits.toml?format=TEXT"
+
+[[audits.google.audits.argh_derive]]
+who = "ChromeOS"
+criteria = "safe-to-run"
+version = "0.1.10"
+aggregated-from = "https://chromium.googlesource.com/chromiumos/third_party/rust_crates/+/refs/heads/main/cargo-vet/audits.toml?format=TEXT"
+
+[[audits.google.audits.argh_derive]]
+who = "George Burgess IV <gbiv@google.com>"
+criteria = "safe-to-run"
+delta = "0.1.10 -> 0.1.12"
+aggregated-from = "https://chromium.googlesource.com/chromiumos/third_party/rust_crates/+/refs/heads/main/cargo-vet/audits.toml?format=TEXT"
+
+[[audits.google.audits.argh_shared]]
+who = "ChromeOS"
+criteria = "safe-to-run"
+version = "0.1.10"
+aggregated-from = "https://chromium.googlesource.com/chromiumos/third_party/rust_crates/+/refs/heads/main/cargo-vet/audits.toml?format=TEXT"
+
+[[audits.google.audits.argh_shared]]
+who = "George Burgess IV <gbiv@google.com>"
+criteria = "safe-to-run"
+delta = "0.1.10 -> 0.1.12"
+aggregated-from = "https://chromium.googlesource.com/chromiumos/third_party/rust_crates/+/refs/heads/main/cargo-vet/audits.toml?format=TEXT"
+
 [[audits.google.audits.bitflags]]
 who = "Justin Green <greenjustin@google.com>"
 criteria = "safe-to-run"

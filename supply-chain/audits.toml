@@ -1,6 +1,26 @@
 
 # cargo-vet audits file
 
+[[audits.argh]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-run"
+delta = "0.1.12 -> 0.1.13"
+
+[[audits.argh_derive]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-run"
+delta = "0.1.12 -> 0.1.13"
+
+[[audits.argh_shared]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-run"
+delta = "0.1.12 -> 0.1.13"
+
+[[audits.rust-fuzzy-search]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-run"
+version = "0.1.1"
+
 [[audits.thread_local]]
 who = "Sebastian Wiesner <sebastian@swsnr.de>"
 criteria = "safe-to-run"
