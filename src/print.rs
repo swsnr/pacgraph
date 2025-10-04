@@ -8,6 +8,8 @@
 
 use std::io::Write;
 
+use anstyle::{AnsiColor, Reset, Style};
+
 /// How to print a package.
 #[derive(Debug, Copy, Clone)]
 pub enum PrintOneLine {
@@ -25,6 +27,15 @@ pub fn print_package_one_line<W: Write>(
 ) -> Result<(), std::io::Error> {
     match how {
         PrintOneLine::NameOnly => writeln!(write, "{}", package.name()),
-        PrintOneLine::WithVersion => writeln!(write, "{} {}", package.name(), package.version()),
+        PrintOneLine::WithVersion => {
+            let bold = Style::new().bold();
+            let green = bold.fg_color(Some(AnsiColor::Green.into()));
+            writeln!(
+                write,
+                "{bold}{} {green}{}{Reset}",
+                package.name(),
+                package.version()
+            )
+        }
     }
 }

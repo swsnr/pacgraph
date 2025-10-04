@@ -6,9 +6,20 @@
 
 use clap::{Args, Parser, Subcommand};
 
+use crate::print::PrintOneLine;
+
+const AFTER_LONG_HELP: &str = "\
+Automatically print colored output if stdout is a TTY, unless overridden by
+environment variables as follows:
+
+- If $NO_COLOR is set to a non-empty string, never print any colors.
+- If $CLICOLOR_FORCE is set to a non-empty string, always print colors even if
+  stdout is not a TTY.
+";
+
 /// Analyse pacman dependency graphs.
 #[derive(Debug, Parser)]
-#[command(version, about)]
+#[command(version, about, after_long_help = AFTER_LONG_HELP)]
 pub struct CliArgs {
     #[command(subcommand)]
     pub command: Command,
@@ -28,4 +39,14 @@ pub struct Orphans {
     #[clap(long)]
     /// Ignore optional dependencies.
     pub ignore_optdepends: bool,
+}
+
+impl Orphans {
+    pub fn oneline_style(&self) -> PrintOneLine {
+        if self.quiet {
+            PrintOneLine::NameOnly
+        } else {
+            PrintOneLine::WithVersion
+        }
+    }
 }

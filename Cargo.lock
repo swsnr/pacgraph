@@ -230,6 +230,8 @@ version = "0.1.0"
 dependencies = [
  "alpm",
  "alpm-utils",
+ "anstream",
+ "anstyle",
  "clap",
  "petgraph",
  "tracing",

@@ -43,6 +43,8 @@ mod args;
 mod print;
 
 fn list_orphans(options: &args::Orphans, alpm: &Alpm) -> std::io::Result<()> {
+    let mut stdout = anstream::stdout().lock();
+
     let localdb = alpm.localdb();
     let pkg_graph = pacgraph::graph::build_graph_for_localdb(localdb);
     let mut orphans = if options.ignore_optdepends {
@@ -56,13 +58,8 @@ fn list_orphans(options: &args::Orphans, alpm: &Alpm) -> std::io::Result<()> {
     // Sort alphabetically
     orphans.sort_by_key(|pkg| pkg.name());
 
-    let how = if options.quiet {
-        print::PrintOneLine::NameOnly
-    } else {
-        print::PrintOneLine::WithVersion
-    };
     for pkg in orphans {
-        print_package_one_line(&mut std::io::stdout(), pkg, how)?;
+        print_package_one_line(&mut stdout, pkg, options.oneline_style())?;
     }
     Ok(())
 }
