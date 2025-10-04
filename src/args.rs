@@ -4,27 +4,27 @@
 //
 // See https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 
-use argh::FromArgs;
+use clap::{Args, Parser, Subcommand};
 
 /// Analyse pacman dependency graphs.
-#[derive(Debug, FromArgs)]
-pub struct Args {
-    #[argh(subcommand)]
+#[derive(Debug, Parser)]
+pub struct CliArgs {
+    #[command(subcommand)]
     pub command: Command,
 }
 
-#[derive(Debug, FromArgs)]
-#[argh(subcommand)]
+#[derive(Debug, Subcommand)]
 pub enum Command {
     Orphans(Orphans),
 }
 
 /// List orphan packages.
-#[derive(FromArgs, Debug)]
-#[argh(subcommand, name = "orphans")]
+#[derive(Args, Debug)]
 pub struct Orphans {
-    #[argh(switch, short = 'q', description = "show less information")]
+    /// Show less information.
+    #[clap(short = 'q', long = "quiet")]
     pub quiet: bool,
-    #[argh(switch, description = "ignore optional dependencies")]
+    #[clap(long)]
+    /// Ignore optional dependencies.
     pub ignore_optdepends: bool,
 }

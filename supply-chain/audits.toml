@@ -6,6 +6,31 @@ who = "Sebastian Wiesner <sebastian@swsnr.de>"
 criteria = "safe-to-deploy"
 version = "4.0.1"
 
+[[audits.anstream]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-run"
+delta = "0.6.13 -> 0.6.21"
+
+[[audits.anstyle]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-deploy"
+delta = "1.0.10 -> 1.0.13"
+
+[[audits.anstyle-parse]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-deploy"
+delta = "0.2.3 -> 0.2.7"
+
+[[audits.anstyle-query]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-deploy"
+delta = "1.0.2 -> 1.1.4"
+
+[[audits.anstyle-wincon]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-run"
+version = "3.0.10"
+
 [[audits.argh]]
 who = "Sebastian Wiesner <sebastian@swsnr.de>"
 criteria = "safe-to-run"
@@ -26,6 +51,41 @@ who = "Sebastian Wiesner <sebastian@swsnr.de>"
 criteria = "safe-to-deploy"
 version = "1.0.0"
 notes = "No unsafe code, no I/O"
+
+[[audits.clap]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-run"
+delta = "4.5.32 -> 4.5.48"
+
+[[audits.clap_builder]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-deploy"
+delta = "4.5.32 -> 4.5.48"
+
+[[audits.clap_derive]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-deploy"
+delta = "4.5.4 -> 4.5.47"
+
+[[audits.clap_lex]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-deploy"
+delta = "0.7.4 -> 0.7.5"
+
+[[audits.colorchoice]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-deploy"
+delta = "1.0.0 -> 1.0.4"
+
+[[audits.is_terminal_polyfill]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-deploy"
+version = "1.70.1"
+
+[[audits.once_cell_polyfill]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-deploy"
+version = "1.70.1"
 
 [[audits.pacmanconf]]
 who = "Sebastian Wiesner <sebastian@swsnr.de>"
@@ -114,60 +174,60 @@ end = "2026-10-03"
 
 [[trusted.windows-sys]]
 criteria = "safe-to-run"
-user-id = 64539
+user-id = 64539 # Kenny Kerr (kennykerr)
 start = "2021-11-15"
 end = "2026-10-03"
 
 [[trusted.windows-targets]]
 criteria = "safe-to-run"
-user-id = 64539
+user-id = 64539 # Kenny Kerr (kennykerr)
 start = "2022-09-09"
 end = "2026-10-03"
 
 [[trusted.windows_aarch64_gnullvm]]
 criteria = "safe-to-run"
-user-id = 64539
+user-id = 64539 # Kenny Kerr (kennykerr)
 start = "2022-09-01"
 end = "2026-10-03"
 
 [[trusted.windows_aarch64_msvc]]
 criteria = "safe-to-run"
-user-id = 64539
+user-id = 64539 # Kenny Kerr (kennykerr)
 start = "2021-11-05"
 end = "2026-10-03"
 
 [[trusted.windows_i686_gnu]]
 criteria = "safe-to-run"
-user-id = 64539
+user-id = 64539 # Kenny Kerr (kennykerr)
 start = "2021-10-28"
 end = "2026-10-03"
 
 [[trusted.windows_i686_gnullvm]]
 criteria = "safe-to-run"
-user-id = 64539
+user-id = 64539 # Kenny Kerr (kennykerr)
 start = "2024-04-02"
 end = "2026-10-03"
 
 [[trusted.windows_i686_msvc]]
 criteria = "safe-to-run"
-user-id = 64539
+user-id = 64539 # Kenny Kerr (kennykerr)
 start = "2021-10-27"
 end = "2026-10-03"
 
 [[trusted.windows_x86_64_gnu]]
 criteria = "safe-to-run"
-user-id = 64539
+user-id = 64539 # Kenny Kerr (kennykerr)
 start = "2021-10-28"
 end = "2026-10-03"
 
 [[trusted.windows_x86_64_gnullvm]]
 criteria = "safe-to-run"
-user-id = 64539
+user-id = 64539 # Kenny Kerr (kennykerr)
 start = "2022-09-01"
 end = "2026-10-03"
 
 [[trusted.windows_x86_64_msvc]]
 criteria = "safe-to-run"
-user-id = 64539
+user-id = 64539 # Kenny Kerr (kennykerr)
 start = "2021-10-27"
 end = "2026-10-03"

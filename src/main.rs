@@ -33,10 +33,11 @@
 
 use alpm::Alpm;
 use alpm_utils::{alpm_with_conf, config::Config};
+use clap::Parser;
 use pacgraph::graph::DependencyEdge;
 use petgraph::visit::{EdgeFiltered, EdgeRef};
 
-use crate::print::print_package_one_line;
+use crate::{args::CliArgs, print::print_package_one_line};
 
 mod args;
 mod print;
@@ -69,7 +70,7 @@ fn list_orphans(options: &args::Orphans, alpm: &Alpm) -> std::io::Result<()> {
 fn main() -> std::io::Result<()> {
     tracing_subscriber::fmt::init();
 
-    let args = argh::from_env::<args::Args>();
+    let args = CliArgs::parse();
 
     let config = Config::new().map_err(|error| match error.kind {
         alpm_utils::config::ErrorKind::Io(error) => error,
