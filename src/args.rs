@@ -17,9 +17,19 @@ environment variables as follows:
   stdout is not a TTY.
 ";
 
+const LONG_VERSION: &str = concat!(
+    env!("CARGO_BIN_NAME"),
+    " ",
+    env!("CARGO_PKG_VERSION"),
+    "\n",
+    env!("CARGO_PKG_HOMEPAGE"),
+    "\nLicense: ",
+    env!("CARGO_PKG_LICENSE"),
+);
+
 /// Analyse pacman dependency graphs.
 #[derive(Debug, Parser)]
-#[command(version, about, after_long_help = AFTER_LONG_HELP)]
+#[command(version, about, after_long_help = AFTER_LONG_HELP, long_version = LONG_VERSION)]
 pub struct CliArgs {
     #[command(subcommand)]
     pub command: Command,
