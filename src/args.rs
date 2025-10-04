@@ -38,6 +38,8 @@ pub struct CliArgs {
 #[derive(Debug, Subcommand)]
 pub enum Command {
     Orphans(Orphans),
+    #[cfg(feature = "completions")]
+    Completions(Completions),
 }
 
 /// List orphan packages.
@@ -58,5 +60,26 @@ impl Orphans {
         } else {
             PrintOneLine::WithVersion
         }
+    }
+}
+
+/// Generate shell completions.
+#[derive(Args, Debug)]
+#[cfg(feature = "completions")]
+pub struct Completions {
+    /// The shell to generate completions for.
+    pub shell: clap_complete::Shell,
+}
+
+#[cfg(feature = "completions")]
+impl Completions {
+    pub fn print(&self) {
+        use clap::CommandFactory;
+        clap_complete::generate(
+            self.shell,
+            &mut CliArgs::command(),
+            env!("CARGO_BIN_NAME"),
+            &mut std::io::stdout(),
+        );
     }
 }

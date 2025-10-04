@@ -136,6 +136,12 @@ user-id = 37641 # Lulu (Morganamilo)
 start = "2020-08-07"
 end = "2026-10-03"
 
+[[trusted.clap_complete]]
+criteria = "safe-to-run"
+user-id = 6743 # Ed Page (epage)
+start = "2021-12-31"
+end = "2026-10-04"
+
 [[trusted.quote]]
 criteria = "safe-to-run"
 user-id = 3618 # David Tolnay (dtolnay)

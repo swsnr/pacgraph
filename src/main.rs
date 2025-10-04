@@ -78,6 +78,8 @@ fn main() -> std::io::Result<()> {
 
     match args.command {
         args::Command::Orphans(orphans) => list_orphans(&orphans, &alpm)?,
+        #[cfg(feature = "completions")]
+        args::Command::Completions(completions) => completions.print(),
     }
 
     Ok(())
