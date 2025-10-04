@@ -32,6 +32,7 @@
 #![forbid(unsafe_code)]
 
 use alpm::Alpm;
+use alpm_utils::{alpm_with_conf, config::Config};
 
 use crate::print::print_package_one_line;
 
@@ -61,7 +62,11 @@ fn main() -> std::io::Result<()> {
 
     let args = argh::from_env::<args::Args>();
 
-    let alpm = Alpm::new("/", "/var/lib/pacman/").unwrap();
+    let config = Config::new().map_err(|error| match error.kind {
+        alpm_utils::config::ErrorKind::Io(error) => error,
+        _ => std::io::Error::new(std::io::ErrorKind::InvalidData, error),
+    })?;
+    let alpm = alpm_with_conf(&config).map_err(std::io::Error::other)?;
     alpm.set_log_cb((), pacgraph::alpm::tracing_log_cb);
 
     match args.command {

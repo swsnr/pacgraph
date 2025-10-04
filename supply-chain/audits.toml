@@ -1,6 +1,11 @@
 
 # cargo-vet audits file
 
+[[audits.alpm-utils]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-deploy"
+version = "4.0.1"
+
 [[audits.argh]]
 who = "Sebastian Wiesner <sebastian@swsnr.de>"
 criteria = "safe-to-run"
@@ -15,6 +20,18 @@ delta = "0.1.12 -> 0.1.13"
 who = "Sebastian Wiesner <sebastian@swsnr.de>"
 criteria = "safe-to-run"
 delta = "0.1.12 -> 0.1.13"
+
+[[audits.cini]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-deploy"
+version = "1.0.0"
+notes = "No unsafe code, no I/O"
+
+[[audits.pacmanconf]]
+who = "Sebastian Wiesner <sebastian@swsnr.de>"
+criteria = "safe-to-run"
+version = "3.0.0"
+notes = "No unsafe code, no I/O, but runs external commands routinely"
 
 [[audits.rust-fuzzy-search]]
 who = "Sebastian Wiesner <sebastian@swsnr.de>"

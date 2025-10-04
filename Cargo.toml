@@ -11,6 +11,7 @@ authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
 
 [dependencies]
 alpm = "4.0.2"
+alpm-utils = "4.0.1"
 argh = "0.1.13"
 petgraph = { version = "0.8.3", default-features = false, features = [
     "std",
