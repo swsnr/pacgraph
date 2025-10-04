@@ -12,7 +12,10 @@ authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
 [dependencies]
 alpm = "4.0.2"
 argh = "0.1.13"
-petgraph = "0.8.3"
+petgraph = { version = "0.8.3", default-features = false, features = [
+    "std",
+    "graphmap",
+] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", default-features = false, features = [
     "std",
