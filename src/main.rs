@@ -33,6 +33,8 @@
 
 use alpm::Alpm;
 use alpm_utils::{alpm_with_conf, config::Config};
+use pacgraph::graph::DependencyEdge;
+use petgraph::visit::{EdgeFiltered, EdgeRef};
 
 use crate::print::print_package_one_line;
 
@@ -42,7 +44,14 @@ mod print;
 fn list_orphans(options: &args::Orphans, alpm: &Alpm) -> std::io::Result<()> {
     let localdb = alpm.localdb();
     let pkg_graph = pacgraph::graph::build_graph_for_localdb(localdb);
-    let mut orphans = pacgraph::dependencies::orphans(&pkg_graph).collect::<Vec<_>>();
+    let mut orphans = if options.ignore_optdepends {
+        pacgraph::dependencies::orphans(&EdgeFiltered::from_fn(&pkg_graph, |edge| {
+            *edge.weight() == DependencyEdge::Required
+        }))
+        .collect::<Vec<_>>()
+    } else {
+        pacgraph::dependencies::orphans(&pkg_graph).collect::<Vec<_>>()
+    };
     // Sort alphabetically
     orphans.sort_by_key(|pkg| pkg.name());
 

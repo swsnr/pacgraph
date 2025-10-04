@@ -88,7 +88,7 @@ impl Deref for PackageNode<'_> {
 }
 
 /// An ALPM dependency graph.
-pub type AlpmDependencyGraph<'a> = DiGraphMap<PackageNode<'a>, DependencyEdge>;
+pub type AlpmDepGraphMap<'a> = DiGraphMap<PackageNode<'a>, DependencyEdge>;
 
 /// Build a dependency graph for the local database.
 ///
@@ -96,7 +96,7 @@ pub type AlpmDependencyGraph<'a> = DiGraphMap<PackageNode<'a>, DependencyEdge>;
 /// `required_by` and `optional_for` edges.  This only works for the local
 /// database, but guarantees to return resolvable dependencies, so the returned
 /// graph is complete.
-pub fn build_graph_for_localdb(db: &Db) -> AlpmDependencyGraph<'_> {
+pub fn build_graph_for_localdb(db: &Db) -> AlpmDepGraphMap<'_> {
     let mut g = DiGraphMap::new();
     for package in db.pkgs() {
         let _guard = debug_span!("package edges", package = package.name()).entered();

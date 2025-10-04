@@ -6,13 +6,15 @@
 
 //! Analyse dependencies of ALPM packages.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 
 use alpm::PackageReason;
-use petgraph::visit::{Bfs, VisitMap as _, Visitable};
+use petgraph::visit::{
+    Bfs, GraphRef, IntoNeighbors, IntoNodeIdentifiers, NodeCount, VisitMap as _, Visitable,
+};
 use tracing::{debug, debug_span};
 
-use crate::graph::AlpmDependencyGraph;
+use crate::graph::PackageNode;
 
 /// Iterate over all orphans in a dependency graph.
 ///
@@ -21,21 +23,28 @@ use crate::graph::AlpmDependencyGraph;
 /// package.
 ///
 /// The returned iterator iterates over orphans in undefined order.
-pub fn orphans<'a>(graph: &AlpmDependencyGraph<'a>) -> impl Iterator<Item = &'a alpm::Package> {
+pub fn orphans<'a, G>(graph: G) -> impl Iterator<Item = &'a alpm::Package>
+where
+    G: GraphRef
+        + NodeCount
+        + Visitable<NodeId = PackageNode<'a>>
+        + IntoNeighbors
+        + IntoNodeIdentifiers,
+{
     #[allow(
         clippy::mutable_key_type,
         reason = "We do not mutate the package pointer while traversing the graph"
     )]
     let mut marked_pkgs = HashMap::with_capacity(graph.node_count());
     let explicit_pkgs = graph
-        .nodes()
+        .node_identifiers()
         .filter(|p| p.reason() == PackageReason::Explicit);
     // We manually initialize BFS, because we'd like to retain the visit map
     // for all explicit packages, so as to avoid repeatedly traversing branches
     // that were already marked by another explicit package.
     let mut bfs = Bfs {
         discovered: graph.visit_map(),
-        ..Bfs::default()
+        stack: VecDeque::new(),
     };
     for node in explicit_pkgs {
         bfs.stack.push_front(node);
@@ -51,7 +60,7 @@ pub fn orphans<'a>(graph: &AlpmDependencyGraph<'a>) -> impl Iterator<Item = &'a 
         }
     }
 
-    graph.nodes().filter_map(move |pkg| {
+    graph.node_identifiers().filter_map(move |pkg| {
         let is_marked = marked_pkgs.get(&pkg).copied().unwrap_or_default();
         (!is_marked).then_some(pkg.package())
     })

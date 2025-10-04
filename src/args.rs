@@ -25,4 +25,6 @@ pub enum Command {
 pub struct Orphans {
     #[argh(switch, short = 'q', description = "show less information")]
     pub quiet: bool,
+    #[argh(switch, description = "ignore optional dependencies")]
+    pub ignore_optdepends: bool,
 }
