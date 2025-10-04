@@ -9,7 +9,7 @@
 use std::collections::HashMap;
 
 use alpm::PackageReason;
-use petgraph::visit::Bfs;
+use petgraph::visit::{Bfs, VisitMap as _, Visitable};
 use tracing::{debug, debug_span};
 
 use crate::graph::AlpmDependencyGraph;
@@ -30,14 +30,23 @@ pub fn orphans<'a>(graph: &AlpmDependencyGraph<'a>) -> impl Iterator<Item = &'a 
     let explicit_pkgs = graph
         .nodes()
         .filter(|p| p.reason() == PackageReason::Explicit);
+    // We manually initialize BFS, because we'd like to retain the visit map
+    // for all explicit packages, so as to avoid repeatedly traversing branches
+    // that were already marked by another explicit package.
+    let mut bfs = Bfs {
+        discovered: graph.visit_map(),
+        ..Bfs::default()
+    };
     for node in explicit_pkgs {
+        bfs.stack.push_front(node);
+        bfs.discovered.visit(node);
         debug!("Marking from {}", node.name());
         let _guard = debug_span!("mark-bfs", package = node.name()).entered();
         marked_pkgs.insert(node, true);
         let mut bfs = Bfs::new(&graph, node);
         while let Some(node) = bfs.next(&graph) {
             if Some(true) != marked_pkgs.insert(node, true) {
-                debug!("Marking {}", node.name());
+                debug!(package = node.name(), "Marking {}", node.name());
             }
         }
     }
