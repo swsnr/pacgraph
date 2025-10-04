@@ -8,6 +8,7 @@ use clap::{Args, Parser, Subcommand};
 
 /// Analyse pacman dependency graphs.
 #[derive(Debug, Parser)]
+#[command(version, about)]
 pub struct CliArgs {
     #[command(subcommand)]
     pub command: Command,
