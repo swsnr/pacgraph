@@ -11,10 +11,10 @@
     clippy::cfg_not_test,
     clippy::tests_outside_test_module,
     // Guard against left-over debugging output
-    clippy::dbg_macro,
+    // clippy::dbg_macro,
     clippy::unimplemented,
     clippy::use_debug,
-    clippy::todo,
+    // clippy::todo,
     // Don't panic carelessly
     clippy::get_unwrap,
     clippy::unused_result_ok,

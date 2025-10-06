@@ -8,10 +8,10 @@
 
 use std::collections::{HashSet, VecDeque};
 
-use alpm::PackageReason;
+use alpm::{Package, PackageReason};
 use petgraph::visit::{
-    Bfs, GraphRef, IntoNeighbors, IntoNodeIdentifiers, NodeCount, NodeFiltered, VisitMap as _,
-    Visitable,
+    Bfs, GraphRef, IntoNeighbors, IntoNeighborsDirected, IntoNodeIdentifiers, NodeCount,
+    NodeFiltered, Reversed, VisitMap as _, Visitable, Walker,
 };
 use tracing::{debug, debug_span};
 
@@ -62,4 +62,31 @@ where
     }
 
     NodeFiltered::from_fn(graph, move |node| !marked_pkgs.contains(&node))
+}
+
+/// Determine why a package was installed.
+///
+/// # Panics
+///
+/// If `graph` has negative edge weights, this function panics.
+pub fn dependents<'a, G>(
+    graph: G,
+    package: &'a Package,
+) -> NodeFiltered<G, impl Fn(PackageNode<'a>) -> bool>
+where
+    G: GraphRef
+        + NodeCount
+        + Visitable<NodeId = PackageNode<'a>>
+        + IntoNeighbors
+        + IntoNeighborsDirected
+        + IntoNodeIdentifiers,
+{
+    let reversed = Reversed(graph);
+    let bfs = Bfs::new(&reversed, PackageNode::new(package));
+    #[allow(
+        clippy::mutable_key_type,
+        reason = "We do not mutate the package pointer while traversing the graph"
+    )]
+    let reachable_nodes = bfs.iter(&reversed).collect::<HashSet<_>>();
+    NodeFiltered::from_fn(graph, move |node| reachable_nodes.contains(&node))
 }

@@ -41,6 +41,11 @@ impl Display for DependencyEdge {
 pub struct PackageNode<'a>(&'a Package);
 
 impl<'a> PackageNode<'a> {
+    /// Create a new node for a package reference.
+    pub fn new(package: &'a Package) -> Self {
+        Self(package)
+    }
+
     /// Get the package of this node.
     #[must_use]
     pub fn package(self) -> &'a Package {

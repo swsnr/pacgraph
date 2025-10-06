@@ -31,20 +31,19 @@
 )]
 #![forbid(unsafe_code)]
 
-use std::io::prelude::*;
-
-use alpm::Alpm;
+use alpm::{Alpm, Package};
 use clap::Parser;
 use pacgraph::graph::{DependencyEdge, PackageNode};
-use petgraph::{
-    dot::{Config, Dot, RankDir},
-    visit::{
-        Data, EdgeFiltered, EdgeRef, GraphProp, GraphRef, IntoEdgeReferences, IntoNeighbors,
-        IntoNodeIdentifiers, IntoNodeReferences, NodeCount, NodeIndexable, NodeRef, Visitable,
-    },
+use petgraph::visit::{
+    Data, EdgeFiltered, EdgeRef, GraphProp, GraphRef, IntoEdgeReferences, IntoNeighbors,
+    IntoNeighborsDirected, IntoNodeIdentifiers, IntoNodeReferences, NodeCount, NodeIndexable,
+    Visitable,
 };
 
-use crate::{args::CliArgs, print::print_package_one_line};
+use crate::{
+    args::CliArgs,
+    print::{print_package_graph, print_package_one_line},
+};
 
 mod args;
 mod print;
@@ -64,37 +63,10 @@ where
 {
     let orphans = pacgraph::dependencies::orphans(&graph);
 
-    if options.dot {
-        let get_node_attributes = |_graph, node: G::NodeRef| {
-            let package = node.weight();
-            if options.quiet {
-                format!(
-                    "label = <<FONT FACE=\"sans-serif\">{}</FONT>>",
-                    package.name()
-                )
-            } else {
-                format!(
-                    "label = <<FONT FACE=\"sans-serif\"><B>{name} <FONT COLOR=\"green\">{version}</FONT></B></FONT>>",
-                    name = package.name(),
-                    version = package.version()
-                )
-            }
-        };
-        let dot = Dot::with_attr_getters(
-            &orphans,
-            &[
-                Config::EdgeNoLabel,
-                Config::NodeNoLabel,
-                Config::RankDir(RankDir::TB),
-            ],
-            &|_graph, edge| match *edge.weight() {
-                DependencyEdge::Required => "style = solid".to_string(),
-                DependencyEdge::Optional => "style = dashed".to_string(),
-            },
-            &get_node_attributes,
-        );
-        let mut stdout = std::io::stdout().lock();
-        writeln!(&mut stdout, "{dot}")?;
+    let mut stdout = anstream::stdout().lock();
+
+    if options.graph_options.dot {
+        print_package_graph(&mut stdout, graph, options.graph_options.oneline_style())
     } else {
         let mut orphan_nodes = orphans
             .node_identifiers()
@@ -103,19 +75,17 @@ where
         // Sort alphabetically
         orphan_nodes.sort_by_key(|pkg| pkg.name());
 
-        let mut stdout = anstream::stdout().lock();
         for pkg in orphan_nodes {
-            print_package_one_line(&mut stdout, pkg, options.oneline_style())?;
+            print_package_one_line(&mut stdout, pkg, options.graph_options.oneline_style())?;
         }
+        Ok(())
     }
-
-    Ok(())
 }
 
 fn orphans_command(options: &args::Orphans, alpm: &Alpm) -> std::io::Result<()> {
     let localdb = alpm.localdb();
     let pkg_graph = pacgraph::graph::build_graph_for_localdb(localdb);
-    if options.ignore_optdepends {
+    if options.graph_options.ignore_optdepends {
         list_orphans(
             options,
             &EdgeFiltered::from_fn(&pkg_graph, |edge| {
@@ -124,6 +94,56 @@ fn orphans_command(options: &args::Orphans, alpm: &Alpm) -> std::io::Result<()> 
         )
     } else {
         list_orphans(options, &pkg_graph)
+    }
+}
+
+fn list_dependents<'a, G>(
+    options: &args::Dependents,
+    pkg_graph: G,
+    package: &'a Package,
+) -> std::io::Result<()>
+where
+    G: GraphRef
+        + GraphProp
+        + NodeCount
+        + Data<EdgeWeight = DependencyEdge, NodeWeight = PackageNode<'a>>
+        + Visitable<NodeId = PackageNode<'a>>
+        + NodeIndexable
+        + IntoNeighborsDirected
+        + IntoNodeIdentifiers
+        + IntoNodeReferences
+        + IntoEdgeReferences,
+{
+    let mut stdout = anstream::stdout().lock();
+    let dependents = pacgraph::dependencies::dependents(&pkg_graph, package);
+    if options.graph_options.dot {
+        print_package_graph(
+            &mut stdout,
+            &dependents,
+            options.graph_options.oneline_style(),
+        )
+    } else {
+        todo!()
+    }
+}
+
+fn dependents_command(options: &args::Dependents, alpm: &Alpm) -> std::io::Result<()> {
+    let localdb = alpm.localdb();
+    let source_pkg = localdb
+        .pkg(options.package.as_str())
+        .map_err(std::io::Error::other)?;
+    let pkg_graph = pacgraph::graph::build_graph_for_localdb(localdb);
+
+    if options.graph_options.ignore_optdepends {
+        list_dependents(
+            options,
+            &EdgeFiltered::from_fn(&pkg_graph, |edge| {
+                *edge.weight() == DependencyEdge::Required
+            }),
+            source_pkg,
+        )
+    } else {
+        list_dependents(options, &pkg_graph, source_pkg)
     }
 }
 
@@ -143,6 +163,7 @@ fn main() -> std::io::Result<()> {
 
     match args.command {
         args::Command::Orphans(orphans) => orphans_command(&orphans, &alpm)?,
+        args::Command::Dependents(dependents) => dependents_command(&dependents, &alpm)?,
         #[cfg(feature = "completions")]
         args::Command::Completions(completions) => completions.print(),
     }

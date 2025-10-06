@@ -37,6 +37,7 @@ pub struct CliArgs {
 
 #[derive(Debug, Subcommand)]
 pub enum Command {
+    Dependents(Dependents),
     Orphans(Orphans),
     #[cfg(feature = "completions")]
     Completions(Completions),
@@ -45,18 +46,34 @@ pub enum Command {
 /// List orphan packages.
 #[derive(Args, Debug)]
 pub struct Orphans {
+    #[clap(flatten)]
+    pub graph_options: GraphOptions,
+}
+
+/// List packages which depend on a package.
+#[derive(Args, Debug)]
+pub struct Dependents {
+    /// The package whose installation reason to find.
+    pub package: String,
+    #[clap(flatten)]
+    pub graph_options: GraphOptions,
+}
+
+#[derive(Debug, Args)]
+/// Options for package graphs.
+pub struct GraphOptions {
+    /// Ignore optional dependencies.
+    #[clap(long)]
+    pub ignore_optdepends: bool,
     /// Show less information.
     #[clap(short = 'q', long = "quiet")]
     pub quiet: bool,
-    #[clap(long)]
-    /// Ignore optional dependencies.
-    pub ignore_optdepends: bool,
-    /// Render the subgraph of orphans as Graphviz.
+    /// Render the graph as dot.
     #[clap(long)]
     pub dot: bool,
 }
 
-impl Orphans {
+impl GraphOptions {
     pub fn oneline_style(&self) -> PrintOneLine {
         if self.quiet {
             PrintOneLine::NameOnly
