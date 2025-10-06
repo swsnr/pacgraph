@@ -68,10 +68,13 @@ where
         let get_node_attributes = |_graph, node: G::NodeRef| {
             let package = node.weight();
             if options.quiet {
-                format!("label = {}", package.name())
+                format!(
+                    "label = <<FONT FACE=\"sans-serif\">{}</FONT>>",
+                    package.name()
+                )
             } else {
                 format!(
-                    "label = \"{name} {version}\"",
+                    "label = <<FONT FACE=\"sans-serif\"><B>{name} <FONT COLOR=\"green\">{version}</FONT></B></FONT>>",
                     name = package.name(),
                     version = package.version()
                 )
