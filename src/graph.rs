@@ -21,6 +21,15 @@ pub enum DependencyEdge {
     Optional,
 }
 
+impl Display for DependencyEdge {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match *self {
+            DependencyEdge::Required => write!(f, "required"),
+            DependencyEdge::Optional => write!(f, "optional"),
+        }
+    }
+}
+
 /// A package node in a graph.
 ///
 /// Wrap a reference to an [`alpm::Package`], which implements equality, ordering,

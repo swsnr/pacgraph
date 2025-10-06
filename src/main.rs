@@ -31,12 +31,17 @@
 )]
 #![forbid(unsafe_code)]
 
+use std::io::prelude::*;
+
 use alpm::Alpm;
-use alpm_utils::{alpm_with_conf, config::Config};
 use clap::Parser;
 use pacgraph::graph::{DependencyEdge, PackageNode};
-use petgraph::visit::{
-    EdgeFiltered, EdgeRef, GraphRef, IntoNeighbors, IntoNodeIdentifiers, NodeCount, Visitable,
+use petgraph::{
+    dot::{Config, Dot, RankDir},
+    visit::{
+        Data, EdgeFiltered, EdgeRef, GraphProp, GraphRef, IntoEdgeReferences, IntoNeighbors,
+        IntoNodeIdentifiers, IntoNodeReferences, NodeCount, NodeIndexable, NodeRef, Visitable,
+    },
 };
 
 use crate::{args::CliArgs, print::print_package_one_line};
@@ -47,23 +52,60 @@ mod print;
 fn list_orphans<'a, G>(options: &args::Orphans, graph: G) -> std::io::Result<()>
 where
     G: GraphRef
+        + GraphProp
+        + Data<EdgeWeight = DependencyEdge, NodeWeight = PackageNode<'a>>
         + NodeCount
+        + NodeIndexable
         + Visitable<NodeId = PackageNode<'a>>
         + IntoNeighbors
-        + IntoNodeIdentifiers,
+        + IntoNodeIdentifiers
+        + IntoEdgeReferences
+        + IntoNodeReferences,
 {
     let orphans = pacgraph::dependencies::orphans(&graph);
-    let mut orphan_nodes = orphans
-        .node_identifiers()
-        .map(PackageNode::package)
-        .collect::<Vec<_>>();
-    // Sort alphabetically
-    orphan_nodes.sort_by_key(|pkg| pkg.name());
 
-    let mut stdout = anstream::stdout().lock();
-    for pkg in orphan_nodes {
-        print_package_one_line(&mut stdout, pkg, options.oneline_style())?;
+    if options.dot {
+        let get_node_attributes = |_graph, node: G::NodeRef| {
+            let package = node.weight();
+            if options.quiet {
+                format!("label = {}", package.name())
+            } else {
+                format!(
+                    "label = \"{name} {version}\"",
+                    name = package.name(),
+                    version = package.version()
+                )
+            }
+        };
+        let dot = Dot::with_attr_getters(
+            &orphans,
+            &[
+                Config::EdgeNoLabel,
+                Config::NodeNoLabel,
+                Config::RankDir(RankDir::TB),
+            ],
+            &|_graph, edge| match *edge.weight() {
+                DependencyEdge::Required => "style = solid".to_string(),
+                DependencyEdge::Optional => "style = dashed".to_string(),
+            },
+            &get_node_attributes,
+        );
+        let mut stdout = std::io::stdout().lock();
+        writeln!(&mut stdout, "{dot}")?;
+    } else {
+        let mut orphan_nodes = orphans
+            .node_identifiers()
+            .map(PackageNode::package)
+            .collect::<Vec<_>>();
+        // Sort alphabetically
+        orphan_nodes.sort_by_key(|pkg| pkg.name());
+
+        let mut stdout = anstream::stdout().lock();
+        for pkg in orphan_nodes {
+            print_package_one_line(&mut stdout, pkg, options.oneline_style())?;
+        }
     }
+
     Ok(())
 }
 
@@ -83,6 +125,8 @@ fn orphans_command(options: &args::Orphans, alpm: &Alpm) -> std::io::Result<()> 
 }
 
 fn main() -> std::io::Result<()> {
+    use alpm_utils::{alpm_with_conf, config::Config};
+
     tracing_subscriber::fmt::init();
 
     let args = CliArgs::parse();

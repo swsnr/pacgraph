@@ -51,6 +51,9 @@ pub struct Orphans {
     #[clap(long)]
     /// Ignore optional dependencies.
     pub ignore_optdepends: bool,
+    /// Render the subgraph of orphans as Graphviz.
+    #[clap(long)]
+    pub dot: bool,
 }
 
 impl Orphans {
