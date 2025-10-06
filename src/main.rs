@@ -34,34 +34,52 @@
 use alpm::Alpm;
 use alpm_utils::{alpm_with_conf, config::Config};
 use clap::Parser;
-use pacgraph::graph::DependencyEdge;
-use petgraph::visit::{EdgeFiltered, EdgeRef};
+use pacgraph::graph::{DependencyEdge, PackageNode};
+use petgraph::visit::{
+    EdgeFiltered, EdgeRef, GraphRef, IntoNeighbors, IntoNodeIdentifiers, NodeCount, Visitable,
+};
 
 use crate::{args::CliArgs, print::print_package_one_line};
 
 mod args;
 mod print;
 
-fn list_orphans(options: &args::Orphans, alpm: &Alpm) -> std::io::Result<()> {
-    let mut stdout = anstream::stdout().lock();
-
-    let localdb = alpm.localdb();
-    let pkg_graph = pacgraph::graph::build_graph_for_localdb(localdb);
-    let mut orphans = if options.ignore_optdepends {
-        pacgraph::dependencies::orphans(&EdgeFiltered::from_fn(&pkg_graph, |edge| {
-            *edge.weight() == DependencyEdge::Required
-        }))
-        .collect::<Vec<_>>()
-    } else {
-        pacgraph::dependencies::orphans(&pkg_graph).collect::<Vec<_>>()
-    };
+fn list_orphans<'a, G>(options: &args::Orphans, graph: G) -> std::io::Result<()>
+where
+    G: GraphRef
+        + NodeCount
+        + Visitable<NodeId = PackageNode<'a>>
+        + IntoNeighbors
+        + IntoNodeIdentifiers,
+{
+    let orphans = pacgraph::dependencies::orphans(&graph);
+    let mut orphan_nodes = orphans
+        .node_identifiers()
+        .map(PackageNode::package)
+        .collect::<Vec<_>>();
     // Sort alphabetically
-    orphans.sort_by_key(|pkg| pkg.name());
+    orphan_nodes.sort_by_key(|pkg| pkg.name());
 
-    for pkg in orphans {
+    let mut stdout = anstream::stdout().lock();
+    for pkg in orphan_nodes {
         print_package_one_line(&mut stdout, pkg, options.oneline_style())?;
     }
     Ok(())
+}
+
+fn orphans_command(options: &args::Orphans, alpm: &Alpm) -> std::io::Result<()> {
+    let localdb = alpm.localdb();
+    let pkg_graph = pacgraph::graph::build_graph_for_localdb(localdb);
+    if options.ignore_optdepends {
+        list_orphans(
+            options,
+            &EdgeFiltered::from_fn(&pkg_graph, |edge| {
+                *edge.weight() == DependencyEdge::Required
+            }),
+        )
+    } else {
+        list_orphans(options, &pkg_graph)
+    }
 }
 
 fn main() -> std::io::Result<()> {
@@ -77,7 +95,7 @@ fn main() -> std::io::Result<()> {
     alpm.set_log_cb((), pacgraph::alpm::tracing_log_cb);
 
     match args.command {
-        args::Command::Orphans(orphans) => list_orphans(&orphans, &alpm)?,
+        args::Command::Orphans(orphans) => orphans_command(&orphans, &alpm)?,
         #[cfg(feature = "completions")]
         args::Command::Completions(completions) => completions.print(),
     }
