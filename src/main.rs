@@ -31,18 +31,22 @@
 )]
 #![forbid(unsafe_code)]
 
+use std::collections::HashMap;
+use std::io::prelude::*;
+
 use alpm::{Alpm, Package};
 use clap::Parser;
 use packit::graph::{DependencyEdge, PackageNode};
 use petgraph::visit::{
-    Data, EdgeFiltered, EdgeRef, GraphProp, GraphRef, IntoEdgeReferences, IntoNeighbors,
+    Data, DfsEvent, EdgeFiltered, EdgeRef, GraphProp, GraphRef, IntoEdgeReferences, IntoNeighbors,
     IntoNeighborsDirected, IntoNodeIdentifiers, IntoNodeReferences, NodeCount, NodeIndexable,
-    Visitable,
+    Reversed, Visitable, depth_first_search,
 };
+use tracing::debug;
 
 use crate::{
     args::CliArgs,
-    print::{print_package_graph, print_package_one_line},
+    print::{DisplayPackageAnsi, print_package_graph},
 };
 
 mod args;
@@ -62,11 +66,10 @@ where
         + IntoNodeReferences,
 {
     let orphans = packit::dependencies::orphans(&graph);
-
+    let with_version = !options.graph_options.quiet;
     let mut stdout = anstream::stdout().lock();
-
     if options.graph_options.dot {
-        print_package_graph(&mut stdout, graph, options.graph_options.oneline_style())
+        print_package_graph(&mut stdout, graph, with_version)
     } else {
         let mut orphan_nodes = orphans
             .node_identifiers()
@@ -76,7 +79,11 @@ where
         orphan_nodes.sort_by_key(|pkg| pkg.name());
 
         for pkg in orphan_nodes {
-            print_package_one_line(&mut stdout, pkg, options.graph_options.oneline_style())?;
+            writeln!(
+                &mut stdout,
+                "{}",
+                DisplayPackageAnsi::new(pkg).with_version(with_version)
+            )?;
         }
         Ok(())
     }
@@ -116,14 +123,54 @@ where
 {
     let mut stdout = anstream::stdout().lock();
     let dependents = packit::dependencies::dependents(&pkg_graph, package);
+    let with_version = !options.graph_options.quiet;
     if options.graph_options.dot {
-        print_package_graph(
-            &mut stdout,
-            &dependents,
-            options.graph_options.oneline_style(),
-        )
+        print_package_graph(&mut stdout, &dependents, with_version)
     } else {
-        todo!()
+        let rdepends = Reversed(&dependents);
+        let mut subtrees = HashMap::new();
+        depth_first_search(
+            &rdepends,
+            [PackageNode::new(package)],
+            |event| match event {
+                DfsEvent::Discover(node, _) => {
+                    debug!(
+                        package = node.package().name(),
+                        "Creating subtree for package {}",
+                        node.package().name(),
+                    );
+                    subtrees.insert(
+                        node,
+                        termtree::Tree::new(DisplayPackageAnsi::new(node.package())),
+                    );
+                }
+                DfsEvent::Finish(node, _) if node != PackageNode::new(package) => {
+                    if let Some(node_tree) = subtrees.remove(&node) {
+                        for parent in
+                            rdepends.neighbors_directed(node, petgraph::Direction::Incoming)
+                        {
+                            debug!(
+                                package = node.package().name(),
+                                parent = parent.package().name(),
+                                "Adding subtree of {} to {}",
+                                node.package().name(),
+                                parent.package().name(),
+                            );
+                            if let Some(parent_tree) = subtrees.get_mut(&parent) {
+                                parent_tree.leaves.push(node_tree.clone());
+                            } else {
+                                // let parent_tree =
+                                //     termtree::Tree::new(DisplayPackageAnsi::new(parent.package()))
+                                //         .with_leaves([node_tree.clone()]);
+                                // subtrees.insert(parent, parent_tree);
+                            }
+                        }
+                    }
+                }
+                _ => {}
+            },
+        );
+        write!(&mut stdout, "{}", &subtrees[&PackageNode::new(package)])
     }
 }
 
