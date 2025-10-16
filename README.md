@@ -1,6 +1,12 @@
-# pacgraph
+# packit
 
-Analyze pacman (ALPM) dependency graphs.
+Pacman Toolkit.
+
+A random collection of mostly pacman related helper commands.
+
+## Features
+
+- Find orphans, across dependency cycles.
 
 ## Example
 
@@ -19,10 +25,10 @@ Optional For    : None
 $ pacman -Qtd
 ```
 
-But `pacgraph` finds this cycle of unrequired dependencies:
+But `packit` finds this cycle of unrequired dependencies:
 
 ```console
-$ pacgraph orphans
+$ packit orphans
 libcamera 0.5.2-1
 libcamera-ipa 0.5.2-1
 ```

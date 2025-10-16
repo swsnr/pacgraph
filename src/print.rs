@@ -9,7 +9,7 @@
 use std::io::prelude::*;
 
 use anstyle::{AnsiColor, Reset, Style};
-use pacgraph::graph::{DependencyEdge, PackageNode};
+use packit::graph::{DependencyEdge, PackageNode};
 use petgraph::{
     dot::{Config, Dot, RankDir},
     visit::{

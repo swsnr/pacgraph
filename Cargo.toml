@@ -1,8 +1,8 @@
 [package]
-name = "pacgraph"
+name = "packit"
 version = "0.1.0"
 description = "Work with pacman package graphs"
-homepage = "https://codeberg.org/swsnr/pacgraph"
+homepage = "https://codeberg.org/swsnr/packit"
 license = "EUPL-1.2 OR GPL-3.0"
 edition = "2024"
 keywords = ["pacman", "graph", "alpm"]

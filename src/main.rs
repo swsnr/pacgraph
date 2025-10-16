@@ -33,7 +33,7 @@
 
 use alpm::{Alpm, Package};
 use clap::Parser;
-use pacgraph::graph::{DependencyEdge, PackageNode};
+use packit::graph::{DependencyEdge, PackageNode};
 use petgraph::visit::{
     Data, EdgeFiltered, EdgeRef, GraphProp, GraphRef, IntoEdgeReferences, IntoNeighbors,
     IntoNeighborsDirected, IntoNodeIdentifiers, IntoNodeReferences, NodeCount, NodeIndexable,
@@ -61,7 +61,7 @@ where
         + IntoEdgeReferences
         + IntoNodeReferences,
 {
-    let orphans = pacgraph::dependencies::orphans(&graph);
+    let orphans = packit::dependencies::orphans(&graph);
 
     let mut stdout = anstream::stdout().lock();
 
@@ -84,7 +84,7 @@ where
 
 fn orphans_command(options: &args::Orphans, alpm: &Alpm) -> std::io::Result<()> {
     let localdb = alpm.localdb();
-    let pkg_graph = pacgraph::graph::build_graph_for_localdb(localdb);
+    let pkg_graph = packit::graph::build_graph_for_localdb(localdb);
     if options.graph_options.ignore_optdepends {
         list_orphans(
             options,
@@ -115,7 +115,7 @@ where
         + IntoEdgeReferences,
 {
     let mut stdout = anstream::stdout().lock();
-    let dependents = pacgraph::dependencies::dependents(&pkg_graph, package);
+    let dependents = packit::dependencies::dependents(&pkg_graph, package);
     if options.graph_options.dot {
         print_package_graph(
             &mut stdout,
@@ -132,7 +132,7 @@ fn dependents_command(options: &args::Dependents, alpm: &Alpm) -> std::io::Resul
     let source_pkg = localdb
         .pkg(options.package.as_str())
         .map_err(std::io::Error::other)?;
-    let pkg_graph = pacgraph::graph::build_graph_for_localdb(localdb);
+    let pkg_graph = packit::graph::build_graph_for_localdb(localdb);
 
     if options.graph_options.ignore_optdepends {
         list_dependents(
@@ -159,7 +159,7 @@ fn main() -> std::io::Result<()> {
         _ => std::io::Error::new(std::io::ErrorKind::InvalidData, error),
     })?;
     let alpm = alpm_with_conf(&config).map_err(std::io::Error::other)?;
-    alpm.set_log_cb((), pacgraph::alpm::tracing_log_cb);
+    alpm.set_log_cb((), packit::alpm::tracing_log_cb);
 
     match args.command {
         args::Command::Orphans(orphans) => orphans_command(&orphans, &alpm)?,
